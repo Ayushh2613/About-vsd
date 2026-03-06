@@ -1,0 +1,369 @@
+import { useState, useMemo } from "react";
+
+const RAW_DATA = [
+  { visitDate: "12 Jan 2026", company: "Spectrum Buildtech", contact: "Ravi V", action: "Shared Pricelist & Samples", scheduled: "07-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Maheshchandra & Associates", contact: "Dinesh B M", action: "Samples to be submitted", scheduled: "15-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Chandavarkar & Thacker Associates (CnT)", contact: "Noor Zohra", action: "FSC Certificate submitted. Follow up for future requirements", scheduled: "10-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Oculus Design Studio", contact: "Surendra", action: "Meet again — was busy with submission. Meet Mr. Diwakar with PD", scheduled: "09-02-2026", assignee: "SS & PD" },
+  { visitDate: "12 Jan 2026", company: "Khosla & Anand Associates", contact: "—", action: "Send introductory email & seek appointment with team", scheduled: "15-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Studio Chintala", contact: "Ezekiel", action: "Send introductory email. Meet Mr. Diwakar with PD", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Etagi Design", contact: "Prashanth Nandiprasad", action: "Meet after 30 Jan. Arch will get back in 2 weeks", scheduled: "06-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Sun Designers", contact: "—", action: "Send intro email & seek appointment. PD to arrange before 13 Feb", scheduled: "13-02-2026", assignee: "SS" },
+  { visitDate: "12 Jan 2026", company: "Rathi Associates", contact: "Jessi", action: "Send intro email. Meet with PD", scheduled: "06-02-2026", assignee: "SS & PD" },
+  { visitDate: "13 Jan 2026", company: "Venkataramanan Associates", contact: "Sanjiv H", action: "Call after 20 Feb", scheduled: "20-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "RC Architecture", contact: "—", action: "Send intro email. Meet on 15 Feb with PD", scheduled: "15-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "Ace Group Architects", contact: "—", action: "Visit after festival. Meet before 20 Feb", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "HSA Architects", contact: "Shankar", action: "Send intro email & seek appointment. Meet before 20 Feb", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "WDA Spaces", contact: "Chethan", action: "Send intro email & seek appointment after 22 Feb", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "Gayathri & Namith Associates", contact: "Bharathi", action: "Wed is vendor meeting day. Next visit on 11-02-2026", scheduled: "11-02-2026", assignee: "SS" },
+  { visitDate: "13 Jan 2026", company: "4site Architecture", contact: "Chandrakanth / Veeresh", action: "Will discuss in Feb for price", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "14 Jan 2026", company: "Assetz Group", contact: "Madhusudhan", action: "Send intro email & seek appointment", scheduled: "15-02-2026", assignee: "SS" },
+  { visitDate: "14 Jan 2026", company: "MSR Infra / MSR Developers", contact: "Himanshu Singh", action: "Asked to meet next week. Meeting with Raksha Ram", scheduled: "09-02-2026", assignee: "SS & PD" },
+  { visitDate: "19 Jan 2026", company: "Ensemble Architects, Jayanagar", contact: "Nandish / Rachana K M", action: "Send price list for Shuttering, Flush Doors, Commercial Ply", scheduled: "13-02-2026", assignee: "SS" },
+  { visitDate: "19 Jan 2026", company: "Geometrixs Architects & Engineers", contact: "—", action: "Introductory Email sent", scheduled: "27-01-2026", assignee: "SS" },
+  { visitDate: "19 Jan 2026", company: "Studio 69 Architects, Jayanagar", contact: "Ganesh Kumar", action: "Introductory Email sent, awaiting appointment", scheduled: "27-01-2026", assignee: "SS" },
+  { visitDate: "19 Jan 2026", company: "Studio Whitescape, Basavangudi", contact: "Manjunath", action: "Introductory Email sent, awaiting confirmation", scheduled: "01-03-2026", assignee: "SS" },
+  { visitDate: "19 Jan 2026", company: "Kembhavi Architects", contact: "Sukshit Shetty", action: "Samples & Pricelist requested for Doors Laminates & HPL boards", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "19 Jan 2026", company: "Sankalp Architects", contact: "Rohan / Spoorthi", action: "Introductory Email sent, awaiting confirmation", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "20 Jan 2026", company: "Venkataramanan Associates", contact: "Madhavan SR", action: "Met with PD. Info to be shared by Arch Madhavan", scheduled: "23-01-2026", assignee: "SS" },
+  { visitDate: "20 Jan 2026", company: "Thomas Associates", contact: "Srinivas Shastri", action: "TDS shared for specs to Arch Shastri by PD/SS", scheduled: "16-02-2026", assignee: "SS & PD" },
+  { visitDate: "20 Jan 2026", company: "Siraj & Renu", contact: "Shailesh", action: "Arch out of station. Introductory mail sent", scheduled: "03-02-2026", assignee: "SS" },
+  { visitDate: "21 Jan 2026", company: "Cadence Architects", contact: "—", action: "Introductory mail sent", scheduled: "20-01-2026", assignee: "SS" },
+  { visitDate: "21 Jan 2026", company: "Sankalp Architects", contact: "Spoorthi", action: "Introductory mail sent", scheduled: "28-01-2026", assignee: "SS" },
+  { visitDate: "21 Jan 2026", company: "Balan & Nambisan Architects", contact: "—", action: "Introductory mail sent", scheduled: "20-02-2026", assignee: "SS & PD" },
+  { visitDate: "21 Jan 2026", company: "Vernekar Associates Pvt Ltd", contact: "—", action: "Intro mail sent. PD got appointment for 23.01.2026 at 11am", scheduled: "23-01-2026", assignee: "SS & PD" },
+  { visitDate: "22 Jan 2026", company: "Bharatiya Hospitality", contact: "Ravindranath V / Santosh Kumar", action: "Met with PD for hotel projects. PD to get samples", scheduled: "11-02-2026", assignee: "SS & PD" },
+  { visitDate: "22 Jan 2026", company: "Karekar Associates, Sanjay Nagar", contact: "Rajendiran", action: "Contractor details shared. Another visit with PD to meet Ayub Khan", scheduled: "20-02-2026", assignee: "SS & PD" },
+  { visitDate: "23 Jan 2026", company: "Studio Meraki, HSR", contact: "Alka Vernekar", action: "Met with PD, shared numbers of 1 GC", scheduled: "09-02-2026", assignee: "SS" },
+  { visitDate: "23 Jan 2026", company: "Capitaland - Swift, Manyata Tech Park", contact: "Pravin Muthuswamy", action: "PO received for Lobby area", scheduled: "28-01-2026", assignee: "SS & PD" },
+  { visitDate: "24 Jan 2026", company: "Designovate India Pvt Ltd, MG Road", contact: "Govindgouda Goudar", action: "7 lakh sqft area in final design stages. Need clientele list & project list", scheduled: "10-02-2026", assignee: "SS & PD" },
+  { visitDate: "27 Jan 2026", company: "Assetz Group", contact: "Madhusudhana HN", action: "Could not meet — no prior appointment", scheduled: "03-02-2026", assignee: "SS" },
+  { visitDate: "27 Jan 2026", company: "John Jacob Associates", contact: "Ananya / John Jacob", action: "Met Ananya & explained products. Looking forward for residential projects", scheduled: "27-02-2026", assignee: "SS" },
+  { visitDate: "29 Jan 2026", company: "Thomas Parambil Architects, Indiranagar", contact: "—", action: "Call back 27.02.2026", scheduled: "03-02-2026", assignee: "SS" },
+  { visitDate: "29 Jan 2026", company: "Adeelite Design Consultant Pvt Ltd", contact: "Aashish Sachdeva", action: "PD to meet Principal Architect. Meet Chandramouli before 20 Feb", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "31 Jan 2026", company: "Symmetrics Development Services Pvt Ltd", contact: "Pallavi Mahajan / Rejo", action: "To meet Arch Pallavi on 09 Feb with QS team", scheduled: "09-02-2026", assignee: "SS & PD" },
+  { visitDate: "31 Jan 2026", company: "Bangalore Airport City Ltd - BACL", contact: "Ravichandran", action: "Met Nadig Consulting — Int Arch yet to be finalised by Colliers", scheduled: "19-02-2026", assignee: "SS" },
+  { visitDate: "02 Mar 2026", company: "Datta & Kannan Architects", contact: "—", action: "Met Jr. Arch Manish — did not cooperate. Need to meet Senior Arch", scheduled: "06-02-2026", assignee: "SS" },
+  { visitDate: "02 Mar 2026", company: "Venkataramanan Associates", contact: "Sanjiv Kumar", action: "Met Sanjiv & explained products. Update in a week's time", scheduled: "11-02-2026", assignee: "SS" },
+  { visitDate: "02 Mar 2026", company: "Brigade Group", contact: "Rajesh Nair / Panduranga K", action: "Quote for shuttering ply. Samples to site. Call on 19 Feb", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "04 Feb 2026", company: "Design Thoughts, JP Nagar", contact: "Sushmita / Antiksh", action: "Briefed Arch Antiksh. Will speak to Senior Arch in a week", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "04 Feb 2026", company: "Mode Architects, JP Nagar", contact: "Mahesh Kumar / Harsha", action: "Working on a club project. Requested appointment with Principal Arch", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "04 Feb 2026", company: "Koru Design Studio, Puttenahalli", contact: "Vineet B / Indradeep Das", action: "Requested ID to help meet Principal Architect", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "04 Feb 2026", company: "Anon Infra, Puttenahalli", contact: "Thimareddy", action: "Samples to be sent", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "04 Feb 2026", company: "Thomas Parambil Associates", contact: "Rushvi / Thomas Parambil", action: "Met Principal Arch with PD. HPL sample to be submitted", scheduled: "12-02-2026", assignee: "SS" },
+  { visitDate: "05 Feb 2026", company: "Khosla Anand & Associates", contact: "Seenu", action: "Meeting for next week", scheduled: "13-02-2026", assignee: "SS" },
+  { visitDate: "05 Feb 2026", company: "Datta & Kannan Architects", contact: "Omkar", action: "Meeting fixed on 06.02.2026", scheduled: "06-02-2026", assignee: "SS" },
+  { visitDate: "06 Feb 2026", company: "Datta & Kannan Architects", contact: "Omkar", action: "List of Projects to be mailed", scheduled: "09-02-2026", assignee: "SS" },
+  { visitDate: "06 Feb 2026", company: "YV Architects (Vishwanath Associates)", contact: "Vithal", action: "Introductory Mail with Pricelist to be shared", scheduled: "10-02-2026", assignee: "SS" },
+  { visitDate: "10 Feb 2026", company: "Mistry Architect", contact: "Vinod", action: "Introductory Mail sent", scheduled: "24-02-2026", assignee: "SS" },
+  { visitDate: "11 Feb 2026", company: "Kembhavi Associates", contact: "Sukshit", action: "Handed HPL catalogue for upcoming projects with rate list", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "11 Feb 2026", company: "ID (Interior Design) Associates", contact: "Ravishankar", action: "Need to meet on Monday", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "11 Feb 2026", company: "Arun Nalapat Associates, CV Raman Nagar", contact: "Imad", action: "Need to meet on Monday", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "12 Feb 2026", company: "Sundaram Architects", contact: "Srinivas", action: "Need to meet on Monday", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "12 Feb 2026", company: "MSR Developers", contact: "Raksha Ramaiah", action: "Architect firm to be awarded", scheduled: "20-02-2026", assignee: "SS" },
+  { visitDate: "12 Feb 2026", company: "Thomas Associates", contact: "Shastri", action: "Interior Design being done by IDA", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "12 Feb 2026", company: "Zyeta", contact: "Venu Madhav", action: "To meet QS Manager & discuss yearly rate basis for in-house furniture", scheduled: "20-02-2026", assignee: "SS" },
+  { visitDate: "13 Feb 2026", company: "Siraj & Renu", contact: "Hyder", action: "Lemon Tree & Residency Hotel in Design Phase. Presidency tower started", scheduled: "20-02-2026", assignee: "SS" },
+  { visitDate: "13 Feb 2026", company: "Zachariah Consultants", contact: "Hussain", action: "Follow up meeting", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "13 Feb 2026", company: "BCD Developers", contact: "Chethan", action: "Meet Purchase Manager Mr. Ganesh on Monday 16.02.2026", scheduled: "16-02-2026", assignee: "SS" },
+  { visitDate: "13 Feb 2026", company: "Symmetrics Development Services Pvt Ltd", contact: "—", action: "Samples submission to QS team, asked to meet next week", scheduled: "17-02-2026", assignee: "SS" },
+  { visitDate: "16 Feb 2026", company: "ID (Interior Design) Associates", contact: "Ravishankar", action: "Arch Vyom could not attend — was on site", scheduled: "17-02-2026", assignee: "SS" },
+  { visitDate: "17 Feb 2026", company: "Artizen Interiors Mahadevpura ITPL", contact: "Sushil Ojha", action: "Bathroom Fabrication work estimate", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "17 Feb 2026", company: "BCD Developers", contact: "Tousif", action: "Shuttering ply Quote to be shared for 12mm 30 & 34 Kg", scheduled: "18-02-2026", assignee: "SS" },
+  { visitDate: "18 Feb 2026", company: "Raheja Mindspace Tower 8, Hyderabad", contact: "Omar (SVS Interiors)", action: "Speak to owner Mr. Deepak for product procurement", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "18 Feb 2026", company: "Tata Projects India Pvt Ltd", contact: "Pavan", action: "Shuttering ply Quote. Samples to be submitted for approval", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "18 Feb 2026", company: "CB Craft", contact: "Rampratap Siyol / Akilesh", action: "Somani ply specified. Need to talk to CB Craft Interior HO", scheduled: "23-02-2026", assignee: "SS" },
+  { visitDate: "19 Feb 2026", company: "Rajpushpa", contact: "Naveen Kumar", action: "Interior Contractor to be assigned", scheduled: "24-02-2026", assignee: "SS" },
+  { visitDate: "19 Feb 2026", company: "Sumadhura Group", contact: "Manas / Venkateshwaralu", action: "Need to contact HO team for purchases", scheduled: "25-02-2026", assignee: "SS" },
+  { visitDate: "19 Feb 2026", company: "HIC Infrastructure", contact: "Fahad", action: "Shuttering ply, BWP Gold & MR Quote — 12mm 30 & 34 Kg", scheduled: "25-02-2026", assignee: "SS" },
+  { visitDate: "19 Feb 2026", company: "Form Studio", contact: "Harshita Reddy", action: "Samples to be submitted", scheduled: "25-02-2026", assignee: "SS" },
+  { visitDate: "20 Feb 2026", company: "J B Interiors", contact: "Sridevi", action: "Speak to Mr. Jitendra Sharma to introduce Samrat to client at site", scheduled: "25-02-2026", assignee: "SS" },
+  { visitDate: "21 Feb 2026", company: "Artizen Interiors Mahadevpura ITPL", contact: "Sushil Ojha", action: "Estimation for bathroom works for fitting HPL", scheduled: "23-02-2026", assignee: "SS & PD" },
+  { visitDate: "23 Feb 2026", company: "Awfis", contact: "Pramod", action: "Handed samples & test reports. Discuss adding Samrat to make list", scheduled: "10-03-2026", assignee: "SS" },
+  { visitDate: "23 Feb 2026", company: "B L Kashyap", contact: "Sanjay Singh", action: "Request to place order for Sattva Texonic Project", scheduled: "08-03-2026", assignee: "SS" },
+  { visitDate: "24 Feb 2026", company: "Siraj & Renu", contact: "Shailesh / Hyder", action: "Collected contractor numbers. Will call them to propose Samrat", scheduled: "26-02-2026", assignee: "SS" },
+  { visitDate: "24 Feb 2026", company: "Vestian Global Workplace Services", contact: "Mrs. Aruna Nambiaran / Praveen", action: "Samples to be submitted on 25.02.2026", scheduled: "25-02-2026", assignee: "SS" },
+  { visitDate: "25 Feb 2026", company: "Vestian Global Workplace Services", contact: "Praveen", action: "Samples & third party Test certificates submitted", scheduled: "09-03-2026", assignee: "SS" },
+  { visitDate: "25 Feb 2026", company: "Dwar Design Studio", contact: "Jai Ganesh", action: "Next Week meeting", scheduled: "04-03-2026", assignee: "SS" },
+  { visitDate: "26 Feb 2026", company: "JLL", contact: "Jachin Jacob", action: "Next Week meeting", scheduled: "05-03-2026", assignee: "SS" },
+  { visitDate: "26 Feb 2026", company: "Designovate", contact: "Govind", action: "Mar 2nd week — get status of design stage", scheduled: "12-03-2026", assignee: "SS" },
+  { visitDate: "26 Feb 2026", company: "BCD Developers", contact: "Tousif", action: "Requirement: 1000 ply/month 12mm 30/34 Kg", scheduled: "11-03-2026", assignee: "SS" },
+  { visitDate: "27 Feb 2026", company: "YV Architects (Vishwanath Associates)", contact: "Vithal", action: "Sir asked to meet in coming week", scheduled: "04-03-2026", assignee: "SS" },
+  { visitDate: "27 Feb 2026", company: "Mistry Architect", contact: "Suraj", action: "Auditorium — 60,000 sqft for 600-800 people capacity", scheduled: "09-03-2026", assignee: "SS" },
+  { visitDate: "27 Feb 2026", company: "Nadig Consulting", contact: "Ashwin Raikar", action: "Asked to meet on Thu/Fri", scheduled: "05-03-2026", assignee: "SS" },
+  { visitDate: "02 Mar 2026", company: "Edifice Consultants Pvt Ltd", contact: "Kavya S", action: "Asked to meet on Friday", scheduled: "06-03-2026", assignee: "SS" },
+  { visitDate: "02 Mar 2026", company: "Morphogenesis", contact: "Ashish Sengupta", action: "Needs Tech Specs for BWP/BWR/MR/Commercial grade plywoods & EPD certs", scheduled: "03-03-2026", assignee: "SS" },
+];
+
+function parseDate(str) {
+  if (!str) return null;
+  const clean = str.trim().replace(/\./g, "-");
+  const match = clean.match(/(\d{1,2})-(\d{2})-(\d{4})/);
+  if (match) {
+    const [, d, m, y] = match;
+    return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  }
+  return null;
+}
+
+function formatDate(dateStr) {
+  const d = parseDate(dateStr);
+  if (!d) return dateStr;
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+const MEETINGS = RAW_DATA.map((r, i) => ({
+  ...r,
+  id: i,
+  parsedDate: parseDate(r.scheduled),
+  formattedDate: formatDate(r.scheduled),
+})).sort((a, b) => {
+  if (!a.parsedDate && !b.parsedDate) return 0;
+  if (!a.parsedDate) return 1;
+  if (!b.parsedDate) return -1;
+  return a.parsedDate - b.parsedDate;
+});
+
+const TODAY = new Date(2026, 2, 4); // March 4 2026
+
+function getStatus(parsedDate) {
+  if (!parsedDate) return "unscheduled";
+  const diff = (parsedDate - TODAY) / (1000 * 60 * 60 * 24);
+  if (diff < -1) return "overdue";
+  if (diff <= 3) return "urgent";
+  if (diff <= 7) return "upcoming";
+  return "future";
+}
+
+const STATUS_META = {
+  overdue: { label: "Overdue", color: "#FF4444", bg: "#FF444415", dot: "#FF4444" },
+  urgent: { label: "This Week", color: "#FF8C00", bg: "#FF8C0015", dot: "#FF8C00" },
+  upcoming: { label: "Next 7 Days", color: "#00B4D8", bg: "#00B4D815", dot: "#00B4D8" },
+  future: { label: "Future", color: "#4CAF50", bg: "#4CAF5015", dot: "#4CAF50" },
+  unscheduled: { label: "Unscheduled", color: "#888", bg: "#88888810", dot: "#888" },
+};
+
+export default function App() {
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterAssignee, setFilterAssignee] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const [view, setView] = useState("list"); // list | calendar
+
+  const meetings = useMemo(() =>
+    MEETINGS.map(m => ({ ...m, status: getStatus(m.parsedDate) })),
+    []
+  );
+
+  const filtered = useMemo(() => {
+    return meetings.filter(m => {
+      const s = search.toLowerCase();
+      const matchSearch = !s || m.company.toLowerCase().includes(s) || m.contact.toLowerCase().includes(s) || m.action.toLowerCase().includes(s);
+      const matchStatus = filterStatus === "all" || m.status === filterStatus;
+      const matchAssignee = filterAssignee === "all" || m.assignee.includes(filterAssignee.replace("&", "&").split(" ")[0]);
+      return matchSearch && matchStatus && matchAssignee;
+    });
+  }, [meetings, search, filterStatus, filterAssignee]);
+
+  const counts = useMemo(() => {
+    const c = { all: meetings.length };
+    meetings.forEach(m => { c[m.status] = (c[m.status] || 0) + 1; });
+    return c;
+  }, [meetings]);
+
+  // Calendar grouping
+  const calendarGroups = useMemo(() => {
+    const groups = {};
+    filtered.forEach(m => {
+      const key = m.parsedDate
+        ? m.parsedDate.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })
+        : "No Date Set";
+      if (!groups[key]) groups[key] = { date: m.parsedDate, items: [] };
+      groups[key].items.push(m);
+    });
+    return Object.entries(groups).sort((a, b) => {
+      if (!a[1].date && !b[1].date) return 0;
+      if (!a[1].date) return 1;
+      if (!b[1].date) return -1;
+      return a[1].date - b[1].date;
+    });
+  }, [filtered]);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0D0D0F", color: "#E8E8EC", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0D0D0F; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .chip:hover { filter: brightness(1.2); cursor: pointer; transition: filter 0.15s; }
+        .row-item:hover { background: #1A1A20 !important; }
+        .row-item { transition: background 0.12s; }
+        .tag-btn { transition: all 0.15s; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .tag-btn:hover { filter: brightness(1.15); }
+        input, select { font-family: 'DM Sans', sans-serif; }
+        .modal-overlay { animation: fadeIn 0.15s ease; }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .modal-card { animation: slideUp 0.2s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .view-toggle { transition: all 0.15s; }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ padding: "28px 36px 0", borderBottom: "1px solid #1E1E26" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, color: "#555", letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>Sidaarth Sonnad</div>
+            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: -0.5, color: "#F0F0F6" }}>Meeting Scheduler</h1>
+            <div style={{ fontSize: 13, color: "#555", marginTop: 4 }}>Daily / Weekly Sales Visit Report · Feb–Mar 2026</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ fontSize: 12, color: "#555", fontFamily: "'Space Mono', monospace", marginRight: 4 }}>TODAY: 04 Mar 2026</div>
+            <button className="view-toggle" onClick={() => setView("list")} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid", borderColor: view === "list" ? "#6C6CFF" : "#2A2A34", background: view === "list" ? "#6C6CFF18" : "transparent", color: view === "list" ? "#9999FF" : "#666", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>List</button>
+            <button className="view-toggle" onClick={() => setView("calendar")} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid", borderColor: view === "calendar" ? "#6C6CFF" : "#2A2A34", background: view === "calendar" ? "#6C6CFF18" : "transparent", color: view === "calendar" ? "#9999FF" : "#666", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>Timeline</button>
+          </div>
+        </div>
+
+        {/* Status pills */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+          {[["all", "All Meetings"], ...Object.entries(STATUS_META).map(([k, v]) => [k, v.label])].map(([key, label]) => (
+            <button key={key} className="tag-btn" onClick={() => setFilterStatus(key)}
+              style={{ padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: 500, background: filterStatus === key ? (key === "all" ? "#6C6CFF22" : STATUS_META[key]?.bg || "#6C6CFF22") : "#16161C", color: filterStatus === key ? (key === "all" ? "#9999FF" : STATUS_META[key]?.color || "#9999FF") : "#555", border: `1px solid ${filterStatus === key ? (key === "all" ? "#6C6CFF44" : STATUS_META[key]?.dot || "#6C6CFF44") : "#2A2A34"}` }}>
+              {label} {counts[key] ? `(${counts[key]})` : ""}
+            </button>
+          ))}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+            {["all", "SS only", "SS & PD"].map(a => (
+              <button key={a} className="tag-btn" onClick={() => setFilterAssignee(a === "SS only" ? "SS" : a === "SS & PD" ? "SS & PD" : "all")}
+                style={{ padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: 500, background: (filterAssignee === "all" && a === "all") || (filterAssignee !== "all" && a.includes(filterAssignee)) ? "#6C6CFF22" : "#16161C", color: (filterAssignee === "all" && a === "all") || (filterAssignee !== "all" && a.includes(filterAssignee)) ? "#9999FF" : "#555", border: `1px solid ${(filterAssignee === "all" && a === "all") || (filterAssignee !== "all" && a.includes(filterAssignee)) ? "#6C6CFF44" : "#2A2A34"}` }}>
+                {a}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div style={{ padding: "16px 36px", borderBottom: "1px solid #1E1E26" }}>
+        <div style={{ position: "relative", maxWidth: 480 }}>
+          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#444", fontSize: 16 }}>⌕</span>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search company, contact, action..."
+            style={{ width: "100%", padding: "10px 14px 10px 38px", borderRadius: 10, border: "1px solid #2A2A34", background: "#14141A", color: "#E8E8EC", fontSize: 13, outline: "none" }} />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 36px 36px" }}>
+        {view === "list" ? (
+          <div>
+            <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 140px 90px 90px", gap: 0, padding: "0 16px", marginBottom: 8 }}>
+              {["Scheduled Date", "Company / Contact", "Action Summary", "Assignee", "Status"].map(h => (
+                <div key={h} style={{ fontSize: 10, color: "#444", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Space Mono', monospace" }}>{h}</div>
+              ))}
+            </div>
+            {filtered.length === 0 && <div style={{ textAlign: "center", color: "#444", padding: "60px 0" }}>No meetings found</div>}
+            {filtered.map(m => {
+              const st = STATUS_META[m.status];
+              return (
+                <div key={m.id} className="row-item" onClick={() => setSelected(m)}
+                  style={{ display: "grid", gridTemplateColumns: "180px 1fr 140px 90px 90px", gap: 0, padding: "12px 16px", borderRadius: 10, cursor: "pointer", background: "transparent", marginBottom: 2, borderLeft: `3px solid ${st.dot}`, alignItems: "center" }}>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "#C8C8D8" }}>{m.formattedDate || <span style={{ color: "#333" }}>—</span>}</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 13.5, color: "#E8E8EC", marginBottom: 2 }}>{m.company}</div>
+                    <div style={{ fontSize: 12, color: "#555" }}>{m.contact}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#778", lineHeight: 1.4, paddingRight: 12 }}>{m.action.length > 55 ? m.action.slice(0, 55) + "…" : m.action}</div>
+                  <div>
+                    <span style={{ fontSize: 11, background: m.assignee.includes("PD") ? "#FF8C0022" : "#6C6CFF22", color: m.assignee.includes("PD") ? "#FF8C00" : "#9999FF", padding: "3px 8px", borderRadius: 6, fontWeight: 600 }}>{m.assignee}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 11, background: st.bg, color: st.color, padding: "3px 8px", borderRadius: 6, fontWeight: 500 }}>{st.label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div>
+            {calendarGroups.map(([dateKey, group]) => {
+              const isToday = group.date && group.date.toDateString() === TODAY.toDateString();
+              const isPast = group.date && group.date < TODAY;
+              return (
+                <div key={dateKey} style={{ marginBottom: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                    <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: isToday ? "#6C6CFF" : isPast ? "#444" : "#888", fontWeight: isToday ? 700 : 400 }}>{isToday ? "📍 " + dateKey : dateKey}</div>
+                    <div style={{ flex: 1, height: 1, background: "#1E1E26" }} />
+                    <div style={{ fontSize: 11, color: "#333" }}>{group.items.length} meeting{group.items.length > 1 ? "s" : ""}</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, paddingLeft: 16 }}>
+                    {group.items.map(m => {
+                      const st = STATUS_META[m.status];
+                      return (
+                        <div key={m.id} className="row-item" onClick={() => setSelected(m)}
+                          style={{ padding: "10px 16px", borderRadius: 8, background: "#13131A", border: `1px solid #1E1E26`, borderLeft: `3px solid ${st.dot}`, cursor: "pointer", display: "flex", gap: 16, alignItems: "flex-start" }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: 13, color: "#E0E0EC" }}>{m.company}</div>
+                            <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>{m.contact} · {m.action.slice(0, 70)}{m.action.length > 70 ? "…" : ""}</div>
+                          </div>
+                          <span style={{ fontSize: 11, background: m.assignee.includes("PD") ? "#FF8C0022" : "#6C6CFF22", color: m.assignee.includes("PD") ? "#FF8C00" : "#9999FF", padding: "3px 8px", borderRadius: 6, fontWeight: 600, whiteSpace: "nowrap" }}>{m.assignee}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Summary footer */}
+      <div style={{ padding: "12px 36px", borderTop: "1px solid #1E1E26", display: "flex", gap: 24, background: "#0A0A0C" }}>
+        {Object.entries(STATUS_META).map(([key, meta]) => (
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: meta.dot }} />
+            <span style={{ fontSize: 12, color: "#444" }}>{meta.label}:</span>
+            <span style={{ fontSize: 12, color: "#888", fontFamily: "'Space Mono', monospace" }}>{counts[key] || 0}</span>
+          </div>
+        ))}
+        <div style={{ marginLeft: "auto", fontSize: 12, color: "#333", fontFamily: "'Space Mono', monospace" }}>{filtered.length} / {meetings.length} shown</div>
+      </div>
+
+      {/* Detail Modal */}
+      {selected && (
+        <div className="modal-overlay" onClick={() => setSelected(null)}
+          style={{ position: "fixed", inset: 0, background: "#00000088", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}
+            style={{ background: "#13131A", border: "1px solid #2A2A34", borderRadius: 16, padding: 32, maxWidth: 560, width: "100%", position: "relative" }}>
+            <button onClick={() => setSelected(null)} style={{ position: "absolute", top: 16, right: 16, background: "#1E1E26", border: "none", color: "#666", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 }}>
+              <span style={{ fontSize: 11, background: STATUS_META[selected.status].bg, color: STATUS_META[selected.status].color, padding: "4px 10px", borderRadius: 20, fontWeight: 600 }}>{STATUS_META[selected.status].label}</span>
+              <span style={{ fontSize: 11, background: selected.assignee.includes("PD") ? "#FF8C0022" : "#6C6CFF22", color: selected.assignee.includes("PD") ? "#FF8C00" : "#9999FF", padding: "4px 10px", borderRadius: 20, fontWeight: 600 }}>{selected.assignee}</span>
+            </div>
+
+            <h2 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 700, color: "#F0F0F6", lineHeight: 1.3 }}>{selected.company}</h2>
+            <div style={{ fontSize: 13, color: "#666", marginBottom: 24 }}>Contact: {selected.contact}</div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+              <div style={{ background: "#0D0D0F", borderRadius: 10, padding: "12px 16px" }}>
+                <div style={{ fontSize: 10, color: "#444", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Space Mono', monospace", marginBottom: 6 }}>Visit Date</div>
+                <div style={{ fontSize: 13, color: "#C0C0D0" }}>{selected.visitDate}</div>
+              </div>
+              <div style={{ background: "#0D0D0F", borderRadius: 10, padding: "12px 16px" }}>
+                <div style={{ fontSize: 10, color: "#444", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Space Mono', monospace", marginBottom: 6 }}>Next Meeting</div>
+                <div style={{ fontSize: 13, color: STATUS_META[selected.status].color, fontWeight: 600, fontFamily: "'Space Mono', monospace" }}>{selected.formattedDate || "Not set"}</div>
+              </div>
+            </div>
+
+            <div style={{ background: "#0D0D0F", borderRadius: 10, padding: "14px 16px" }}>
+              <div style={{ fontSize: 10, color: "#444", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Space Mono', monospace", marginBottom: 8 }}>Action Proposed</div>
+              <div style={{ fontSize: 13, color: "#BBBBC8", lineHeight: 1.6 }}>{selected.action}</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
